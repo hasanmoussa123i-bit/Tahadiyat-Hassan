@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Java
@@ -22,33 +22,29 @@ jobs:
 
       - name: Accept Android licenses
         run: |
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+          yes | sdkmanager --licenses || true
 
       - name: Install Android SDK
         run: |
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      
-        
-              - name: Build APK
+      - name: Extract game files
         run: |
-          GRADLEW=$(find project -name gradlew -type f | head -n 1)
-          if [ -z "$GRADLEW" ]; then
-            echo "لم يتم العثور على gradlew"
-            exit 1
-          fi
-          chmod +x "$GRADLEW"
-          cd "$(dirname "$GRADLEW")"
-          ./gradlew assembleDebug
+          unzip -o Tahadiyat_Hassan_Full.zip -d project
 
-      - name: Locate Gradle project
+      - name: Find Gradle project
         run: |
           find project -name gradlew -type f
 
       - name: Build APK
         run: |
-          cd project
-          chmod +x gradlew
+          GRADLEW=$(find project -name gradlew -type f | head -n 1)
+          if [ -z "$GRADLEW" ]; then
+            echo "Gradle project not found"
+            exit 1
+          fi
+          chmod +x "$GRADLEW"
+          cd "$(dirname "$GRADLEW")"
           ./gradlew assembleDebug
 
       - name: Upload APK
